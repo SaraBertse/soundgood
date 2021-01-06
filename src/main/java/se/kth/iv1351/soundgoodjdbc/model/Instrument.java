@@ -47,7 +47,7 @@ public class Instrument implements InstrumentDTO {
         this.type = type;
         this.rentalFee = rentalFee;
     }
-
+        
     public String getBrand(){
         return brand;
     }

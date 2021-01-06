@@ -19,25 +19,18 @@ import se.kth.iv1351.soundgoodjdbc.model.Instrument;
  * database.
  */
 public class SoundgoodDAO {
-    private static final String HOLDER_TABLE_NAME = "holder";
-    private static final String HOLDER_PK_COLUMN_NAME = "holder_id";
-    private static final String HOLDER_COLUMN_NAME = "name";
-    private static final String ACCT_TABLE_NAME = "account";
-    private static final String ACCT_NO_COLUMN_NAME = "account_no";
-    private static final String BALANCE_COLUMN_NAME = "balance";
-    private static final String HOLDER_FK_COLUMN_NAME = HOLDER_PK_COLUMN_NAME;
 
     private Connection connection;
 
     private PreparedStatement listInstrumentsStmt;
     private PreparedStatement findAllRentableInstrumentsByTypeStmt;
-    private PreparedStatement findStudentByPersonNumber;
+    private PreparedStatement findStudentByPersonNumberStmt;
     private PreparedStatement rentInstrumentStmt;
-    private PreparedStatement findInstrumentById;
-    private PreparedStatement changeInstrumentRentalId;
-    private PreparedStatement getLatestIdFromInstrumentRental;
-    private PreparedStatement findInstrumentRentalIdfromSchoolsInstrument;
-    private PreparedStatement enterTerminatedRental;
+    private PreparedStatement findInstrumentByIdStmt;
+    private PreparedStatement changeInstrumentRentalIdStmt;
+    private PreparedStatement getLatestIdFromInstrumentRentalStmt;
+    private PreparedStatement findInstrumentRentalIdfromSchoolsInstrumentStmt;
+    private PreparedStatement enterTerminatedRentalStmt;
     private PreparedStatement changeRentalEndDateStmt;
     private PreparedStatement findNumberOfRentalsStmt;
 
@@ -46,13 +39,20 @@ public class SoundgoodDAO {
      */
     public SoundgoodDAO() throws SoundgoodDBException {
         try {
-            connectToBankDB();
+            connectToSoundgoodDB();
             prepareStatements();
         } catch (ClassNotFoundException | SQLException exception) {
             throw new SoundgoodDBException("Could not connect to datasource.", exception);
         }
     }
 
+    /**
+     * Finds all rentable instruments by type.
+     * 
+     * @param type the type of instrument, for example piano or guitar
+     * @return a list of rentable instruments
+     * @throws SoundgoodDBException thrown if something goes wrong
+     */
         public List<Instrument> findRentableInstrumentsByType(String type) throws SoundgoodDBException {
         String failureMsg = "Could not search for specified instruments.";
         ResultSet result = null;
@@ -93,6 +93,18 @@ public class SoundgoodDAO {
     }
                 
                  //Parameters: Personnr, instrument_id, start-date, end-date.
+    /**
+     * Rents an instrument if the student has less than 2 ongoing rentals and if
+     * the rental is for maximum a year.
+     * 
+     * @param personNumber the personnumber of the student, in the format yyyymmddxxxx
+     * @param instrumentId the instrument id of the instrument
+     * @param startDate the start date, in the format yyyy-mm-dd
+     * @param endDate the end date, in the format yyyy-mm-dd
+     * @throws SoundgoodDBException is thrown if something goes wrong or if the 
+     * student already has two instrument rentals OR wants to rent the instrument
+     * for longer than a year.
+     */
     public void rentInstrument(String personNumber, int instrumentId,
             String startDate, String endDate) throws SoundgoodDBException {
         
@@ -100,8 +112,8 @@ public class SoundgoodDAO {
         String failureMsg = "Could not rent the instrument " + instrumentId; 
         int updatedRows = 0;
         try { 
-            findStudentByPersonNumber.setString(1, personNumber);
-            ResultSet result = findStudentByPersonNumber.executeQuery();          
+            findStudentByPersonNumberStmt.setString(1, personNumber);
+            ResultSet result = findStudentByPersonNumberStmt.executeQuery();          
 
             int studentId = 0;
                     if (result.next()) {
@@ -140,17 +152,17 @@ public class SoundgoodDAO {
                 handleException(failureMsg, null);
             }
   
-            findInstrumentById.setInt(1, instrumentId);
+            findInstrumentByIdStmt.setInt(1, instrumentId);
 
             int latestRentalId = 0;
-            result = getLatestIdFromInstrumentRental.executeQuery();
+            result = getLatestIdFromInstrumentRentalStmt.executeQuery();
                                 if (result.next()) {
                                 latestRentalId = result.getInt("max");
                 }
-            changeInstrumentRentalId.setInt(1, (latestRentalId)); 
-            changeInstrumentRentalId.setInt(2, instrumentId);
+            changeInstrumentRentalIdStmt.setInt(1, (latestRentalId)); 
+            changeInstrumentRentalIdStmt.setInt(2, instrumentId);
             
-            updatedRows = changeInstrumentRentalId.executeUpdate(); 
+            updatedRows = changeInstrumentRentalIdStmt.executeUpdate(); 
             if (updatedRows != 1) {
                 handleException(failureMsg, null);
             }  
@@ -162,32 +174,37 @@ public class SoundgoodDAO {
         }
     }
     
+    /**
+     * Terminates a rental.
+     * @param instrumentId the instrument id of the returned instrument.
+     * @throws SoundgoodDBException thrown if something goes wrong.
+     */
         public void terminateRental(int instrumentId) throws SoundgoodDBException {
             
             String failureMsg = "Could not terminate the rental for instrument " + instrumentId; 
             
             int updatedRows = 0;
         try{
-            findInstrumentRentalIdfromSchoolsInstrument.setInt(1, instrumentId); 
+            findInstrumentRentalIdfromSchoolsInstrumentStmt.setInt(1, instrumentId); 
             int rentalId = 0;
      
-            ResultSet result = findInstrumentRentalIdfromSchoolsInstrument.executeQuery();
+            ResultSet result = findInstrumentRentalIdfromSchoolsInstrumentStmt.executeQuery();
             
                         if (result.next()) {
                         rentalId = result.getInt("instrument_rental_id");
                 }
                         
-            enterTerminatedRental.setInt(1, rentalId);
-            enterTerminatedRental.setInt(2, instrumentId);
-            updatedRows = enterTerminatedRental.executeUpdate();
+            enterTerminatedRentalStmt.setInt(1, rentalId);
+            enterTerminatedRentalStmt.setInt(2, instrumentId);
+            updatedRows = enterTerminatedRentalStmt.executeUpdate();
             if (updatedRows != 1) {
                 handleException(failureMsg, null);
             }
             
-            changeInstrumentRentalId.setString(1, null); 
-            changeInstrumentRentalId.setInt(2, instrumentId);
+            changeInstrumentRentalIdStmt.setString(1, null); 
+            changeInstrumentRentalIdStmt.setInt(2, instrumentId);
             
-            updatedRows = changeInstrumentRentalId.executeUpdate();
+            updatedRows = changeInstrumentRentalIdStmt.executeUpdate();
             if (updatedRows != 1) {
                 handleException(failureMsg, null);
             }
@@ -208,11 +225,9 @@ public class SoundgoodDAO {
             
         }
 
-    private void connectToBankDB() throws ClassNotFoundException, SQLException {
+    private void connectToSoundgoodDB() throws ClassNotFoundException, SQLException {
         connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/throwaway_sg1",
                                                  "postgres", "postgres");
-        // connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bankdb",
-        //                                          "root", "javajava");
         connection.setAutoCommit(false);
     }
 
@@ -225,10 +240,10 @@ public class SoundgoodDAO {
                 + ", instrument_type, rental_fee_per_month FROM schools_instrument "
                 + "WHERE instrument_type = ? AND instrument_rental_id IS NULL");
         
-        findInstrumentById = connection.prepareStatement("SELECT schools_instrument_id"
+        findInstrumentByIdStmt = connection.prepareStatement("SELECT schools_instrument_id"
                 + " FROM schools_instrument WHERE schools_instrument_id = ?");
         
-        findStudentByPersonNumber = connection.prepareStatement("SELECT * FROM student"
+        findStudentByPersonNumberStmt = connection.prepareStatement("SELECT * FROM student"
                 + " INNER JOIN person ON student.person_id = person.person_id "
                 + "WHERE person.person_number = ?");
        
@@ -236,16 +251,16 @@ public class SoundgoodDAO {
             + " (rental_start_date, rental_end_date, student_id)" 
             + " VALUES (?::date, ?::date, ?)");
        
-        changeInstrumentRentalId = connection.prepareStatement("UPDATE schools_instrument"
+        changeInstrumentRentalIdStmt = connection.prepareStatement("UPDATE schools_instrument"
             + " SET instrument_rental_id = ?::int WHERE schools_instrument_id = ?"); 
         
-        getLatestIdFromInstrumentRental = connection.prepareStatement("SELECT MAX(instrument_rental_id)"
+        getLatestIdFromInstrumentRentalStmt = connection.prepareStatement("SELECT MAX(instrument_rental_id)"
             + " FROM instrument_rental");
         
-        findInstrumentRentalIdfromSchoolsInstrument = connection.prepareStatement("SELECT"
+        findInstrumentRentalIdfromSchoolsInstrumentStmt = connection.prepareStatement("SELECT"
         + " instrument_rental_id FROM schools_instrument WHERE schools_instrument_id = ?");
         
-        enterTerminatedRental = connection.prepareStatement("INSERT INTO terminated_rental"
+        enterTerminatedRentalStmt = connection.prepareStatement("INSERT INTO terminated_rental"
             + " (instrument_rental_id, schools_instrument_id) VALUES (?, ?)");
         
         changeRentalEndDateStmt = connection.prepareStatement("UPDATE instrument_rental"

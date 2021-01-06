@@ -53,7 +53,6 @@ public class Controller {
                 //Parameters: Personnr, instrument_id, start-date, end-date.
             public void rentInstrument(String personNumber, int instrumentId,
                     String startDate, String endDate) throws SoundgoodDBException {
-                    System.out.println("Reaches controller");
                     soundgoodDb.rentInstrument(personNumber, instrumentId,
                     startDate, endDate);
             }

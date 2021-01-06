@@ -100,25 +100,19 @@ public class SoundgoodDAO {
         String failureMsg = "Could not rent the instrument " + instrumentId; 
         int updatedRows = 0;
         try { 
-            System.out.println("reaches first try line");
-   
             findStudentByPersonNumber.setString(1, personNumber);
             ResultSet result = findStudentByPersonNumber.executeQuery();          
 
             int studentId = 0;
-            System.out.println("Find student by personnr success");
                     if (result.next()) {
                         studentId = result.getInt("student_id");
                 }
-            System.out.println("Student id in DB file is: " + studentId);
-            
-
+  
             findNumberOfRentalsStmt.setInt(1, studentId);
             int i = 0;
             result = findNumberOfRentalsStmt.executeQuery();
                 while (result.next()) {
                     i++;
-                    System.out.println("i is : " + i);
                 }
      
             if (i >= 2){
@@ -131,11 +125,8 @@ public class SoundgoodDAO {
             
             int intStartDate = Integer.parseInt(checkedStartDate);
             int intEndDate = Integer.parseInt(checkedEndDate);
-            System.out.println(intStartDate + "  " + intEndDate);
-            
-         
         
-            if ((intStartDate + 10000) <= intEndDate){
+            if ((intStartDate + 10001) <= intEndDate){
                 System.out.println("You can only rent an instrument for a year");
                 handleException(failureMsg, null);
             }
@@ -165,6 +156,7 @@ public class SoundgoodDAO {
             }  
             
             connection.commit();
+            System.out.println("Instrument rented successfully");
         } catch (SQLException sqle) {
             handleException(failureMsg, sqle);
         }
@@ -183,7 +175,6 @@ public class SoundgoodDAO {
             
                         if (result.next()) {
                         rentalId = result.getInt("instrument_rental_id");
-                        System.out.println("rental_id is:" + rentalId);
                 }
                         
             enterTerminatedRental.setInt(1, rentalId);
@@ -210,6 +201,7 @@ public class SoundgoodDAO {
             }
 
            connection.commit();
+           System.out.println("The rental has been terminated.");
           } catch (SQLException sqle) {
             handleException(failureMsg, sqle);
         }

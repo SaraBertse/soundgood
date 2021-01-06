@@ -4,6 +4,10 @@ package se.kth.iv1351.soundgoodjdbc.view;
  * Defines all commands that can be performed by a user of the chat application.
  */
 public enum Command {
+       /**
+     * Lists all commands.
+     */
+    HELP,
     /**
      * Lists all instruments of the specified type.
      */
@@ -16,10 +20,6 @@ public enum Command {
      * Terminates the rental of the specified instrument.
      */
     TERMINATE,
-    /**
-     * Lists all commands.
-     */
-    HELP,
     /**
      * Leave the chat application.
      */

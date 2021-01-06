@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Scanner;
 
 
-import se.kth.iv1351.soundgoodjdbc.view.Command;
+
 import static se.kth.iv1351.soundgoodjdbc.view.Command.HELP;
 import se.kth.iv1351.soundgoodjdbc.controller.Controller;
 import se.kth.iv1351.soundgoodjdbc.model.InstrumentDTO;

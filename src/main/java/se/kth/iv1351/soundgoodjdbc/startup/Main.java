@@ -16,7 +16,7 @@ public class Main {
         try {
         new BlockingInterpreter(new Controller()).handleCmds();
         } catch(SoundgoodDBException bdbe) {
-            System.out.println("Could not connect to Bank db.");
+            System.out.println("Could not connect to Soundgood db.");
             bdbe.printStackTrace();
         }
     }

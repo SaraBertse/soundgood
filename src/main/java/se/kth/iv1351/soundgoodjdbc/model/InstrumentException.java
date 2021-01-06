@@ -1,8 +1,9 @@
 package se.kth.iv1351.soundgoodjdbc.model;
 
 /**
- * Thrown when create, read or delete of an account fails.
+ * Thrown when getting a list of instruments, renting or terminating a rental fails.
  */
+
 public class InstrumentException extends Exception {
 
     /**

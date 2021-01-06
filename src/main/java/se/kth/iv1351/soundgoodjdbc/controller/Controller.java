@@ -1,4 +1,3 @@
-
 package se.kth.iv1351.soundgoodjdbc.controller;
 
 import java.util.ArrayList;
@@ -16,20 +15,26 @@ import se.kth.iv1351.soundgoodjdbc.model.InstrumentException;
  * the data, and finally tells the DAO to store the updated data (if any).
  */
 public class Controller {
+
     private final SoundgoodDAO soundgoodDb;
 
     /**
      * Creates a new instance, and retrieves a connection to the database.
-     * 
+     *
      * @throws SoundgoodDBException If unable to connect to the database.
      */
     public Controller() throws SoundgoodDBException {
         soundgoodDb = new SoundgoodDAO();
     }
-
-
-        public List<? extends InstrumentDTO> getRentableInstrumentsByType(String type)
-                                                              throws InstrumentException {
+/**
+ * Gets all rentable instruments by type.
+ * 
+ * @param type the type, for example piano or guitar
+ * @return a list of rentable instruments.
+ * @throws InstrumentException 
+ */
+    public List<? extends InstrumentDTO> getRentableInstrumentsByType(String type)
+            throws InstrumentException {
         if (type == null) {
             return new ArrayList<>();
         }
@@ -40,26 +45,16 @@ public class Controller {
             throw new InstrumentException("Could not search for rentable instruments.", e);
         }
     }
-        
-        
-                public List<? extends InstrumentDTO> getAllInstruments() throws InstrumentException {
-        try {
-            return soundgoodDb.listInstruments();
-        } catch (Exception e) {
-            throw new InstrumentException("Unable to list instruments.", e);
-        }
+
+
+    //Parameters: Personnr, instrument_id, start-date, end-date.
+    public void rentInstrument(String personNumber, int instrumentId,
+            String startDate, String endDate) throws SoundgoodDBException {
+        soundgoodDb.rentInstrument(personNumber, instrumentId,
+                startDate, endDate);
     }
-            
-                //Parameters: Personnr, instrument_id, start-date, end-date.
-            public void rentInstrument(String personNumber, int instrumentId,
-                    String startDate, String endDate) throws SoundgoodDBException {
-                    soundgoodDb.rentInstrument(personNumber, instrumentId,
-                    startDate, endDate);
-            }
-            
-            
-            public void terminateRental(int instrumentId) throws SoundgoodDBException{
-                soundgoodDb.terminateRental(instrumentId);
-            }
+
+    public void terminateRental(int instrumentId) throws SoundgoodDBException {
+        soundgoodDb.terminateRental(instrumentId);
+    }
 }
- 

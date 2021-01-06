@@ -76,7 +76,7 @@ public class BlockingInterpreter {
                         
                         break;
                     case TERMINATE:
-                     //input: Personnr, instrument_id
+                     //input: instrument_id
                         ctrl.terminateRental(Integer.parseInt(cmdLine.getParameter(0)));
                         break;
                     default:
